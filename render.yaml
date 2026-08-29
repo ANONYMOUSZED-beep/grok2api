@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: grok2api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: TZ
+        value: Asia/Shanghai
+      - key: GROK2API_DATABASE_URL
+        value: ""
+    disk:
+      name: data
+      mountPath: /app/data
+      sizeGB: 1
