@@ -46,16 +46,14 @@ RUN --mount=type=cache,id=grok2api-go-mod,target=/go/pkg/mod,sharing=locked \
 
 FROM alpine:${ALPINE_VERSION}
 
-ENV TZ=Asia/Shanghai \
-    GROK2API_CONFIG_SOURCE=/run/grok2api/config.yaml
+ENV TZ=Asia/Shanghai
 
 RUN apk add --no-cache ca-certificates su-exec tzdata && \
     addgroup -S -g 10001 grok2api && \
     adduser -S -D -H -u 10001 -G grok2api grok2api && \
-    mkdir -p /app/data /run/grok2api /var/lib/grok2api-quality-guard && \
+    mkdir -p /app/data /var/lib/grok2api-quality-guard && \
     chown -R grok2api:grok2api \
       /app/data \
-      /run/grok2api \
       /var/lib/grok2api-quality-guard && \
     chmod 0700 /var/lib/grok2api-quality-guard
 
@@ -66,36 +64,41 @@ COPY --from=frontend-builder /src/frontend/dist /app/frontend/dist
 COPY VERSION /app/VERSION
 COPY --chmod=0755 docker/entrypoint.sh /usr/local/bin/grok2api-entrypoint
 
-# Embed config.yaml directly
-RUN echo 'server:\n\
-  listen: "0.0.0.0:8000"\n\
-  maxBodyBytes: 33554432\n\
-  trustedProxies: []\n\
-  readTimeout: 15m\n\
-  requestTimeout: 2h\n\
-  swaggerEnabled: false\n\
-auth:\n\
-  accessTokenTTL: 15m\n\
-  refreshTokenTTL: 720h\n\
-  secureCookies: false\n\
-secrets:\n\
-  jwtSecret: "31dca7815e992c0653998241739d74e4f90b3f69e2cf13a5bf8445205f7625cb"\n\
-  credentialEncryptionKey: "Q+8S+gghePkbLuyCNJ+5/FZiN97Lw6/zpm2SHNs6Zek="\n\
-bootstrapAdmin:\n\
-  username: "admin"\n\
-  password: "Grok2API@2026Secure"\n\
-frontend:\n\
-  staticPath: "./frontend/dist"\n\
-database:\n\
-  driver: sqlite\n\
-  sqlite:\n\
-    path: "./data/backend.db"\n\
-runtimeStore:\n\
-  driver: memory\n\
-media:\n\
-  driver: local\n\
-  local:\n\
-    path: "./data/media"\n' > /run/grok2api/config.yaml
+# Create config.yaml inline
+RUN cat > /app/config.yaml << 'EOFCONFIG'
+server:
+  listen: "0.0.0.0:8000"
+  maxBodyBytes: 33554432
+  trustedProxies: []
+  readTimeout: 15m
+  requestTimeout: 2h
+  swaggerEnabled: false
+auth:
+  accessTokenTTL: 15m
+  refreshTokenTTL: 720h
+  secureCookies: false
+secrets:
+  jwtSecret: "31dca7815e992c0653998241739d74e4f90b3f69e2cf13a5bf8445205f7625cb"
+  credentialEncryptionKey: "Q+8S+gghePkbLuyCNJ+5/FZiN97Lw6/zpm2SHNs6Zek="
+bootstrapAdmin:
+  username: "admin"
+  password: "Grok2API@2026Secure"
+frontend:
+  staticPath: "./frontend/dist"
+database:
+  driver: sqlite
+  sqlite:
+    path: "./data/backend.db"
+runtimeStore:
+  driver: memory
+media:
+  driver: local
+  local:
+    path: "./data/media"
+EOFCONFIG
+
+# Also create in the expected location
+RUN mkdir -p /run/grok2api && cp /app/config.yaml /run/grok2api/config.yaml
 
 EXPOSE 8000
 
