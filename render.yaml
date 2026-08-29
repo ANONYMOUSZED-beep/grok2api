@@ -9,5 +9,13 @@ services:
     envVars:
       - key: TZ
         value: Asia/Shanghai
+      - key: GROK2API_JWT_SECRET
+        value: "31dca7815e992c0653998241739d74e4f90b3f69e2cf13a5bf8445205f7625cb"
+      - key: GROK2API_CREDENTIAL_ENCRYPTION_KEY
+        value: "Q+8S+gghePkbLuyCNJ+5/FZiN97Lw6/zpm2SHNs6Zek="
+      - key: GROK2API_BOOTSTRAP_ADMIN_USERNAME
+        value: "admin"
+      - key: GROK2API_BOOTSTRAP_ADMIN_PASSWORD
+        value: "Grok2API@2026Secure"
       - key: GROK2API_DATABASE_URL
         value: ""
