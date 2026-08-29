@@ -2,45 +2,10 @@ services:
   - type: web
     name: grok2api
     env: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile.render
     dockerContext: .
     plan: free
     healthCheckPath: /health
-    dockerConfig: |-
-      {
-        "config.yaml": |
-          server:
-            listen: "0.0.0.0:8000"
-            maxBodyBytes: 33554432
-            trustedProxies: []
-            readTimeout: 15m
-            requestTimeout: 2h
-            swaggerEnabled: false
-          auth:
-            accessTokenTTL: 15m
-            refreshTokenTTL: 720h
-            secureCookies: false
-          secrets:
-            jwtSecret: "31dca7815e992c0653998241739d74e4f90b3f69e2cf13a5bf8445205f7625cb"
-            credentialEncryptionKey: "Q+8S+gghePkbLuyCNJ+5/FZiN97Lw6/zpm2SHNs6Zek="
-          bootstrapAdmin:
-            username: "admin"
-            password: "Grok2API@2026Secure"
-          frontend:
-            staticPath: "./frontend/dist"
-          database:
-            driver: sqlite
-            sqlite:
-              path: "./data/backend.db"
-          runtimeStore:
-            driver: memory
-          media:
-            driver: local
-            local:
-              path: "./data/media"
-      }
     envVars:
       - key: TZ
         value: Asia/Shanghai
-      - key: GROK2API_CONFIG_SOURCE
-        value: /etc/grok2api/config.yaml
