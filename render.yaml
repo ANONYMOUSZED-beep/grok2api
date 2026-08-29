@@ -11,7 +11,3 @@ services:
         value: Asia/Shanghai
       - key: GROK2API_DATABASE_URL
         value: ""
-    disk:
-      name: data
-      mountPath: /app/data
-      sizeGB: 1
