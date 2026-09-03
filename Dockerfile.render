@@ -48,7 +48,7 @@ FROM alpine:${ALPINE_VERSION}
 
 ENV TZ=Asia/Shanghai
 
-RUN apk add --no-cache ca-certificates tzdata && \
+RUN apk add --no-cache ca-certificates su-exec tzdata && \
     addgroup -S -g 10001 grok2api && \
     adduser -S -D -H -u 10001 -G grok2api grok2api && \
     mkdir -p /app/data
@@ -58,39 +58,7 @@ WORKDIR /app
 COPY --from=backend-builder --chmod=0755 /out/grok2api /app/grok2api
 COPY --from=frontend-builder /src/frontend/dist /app/frontend/dist
 COPY VERSION /app/VERSION
-
-# Create config.yaml directly
-RUN cat > /app/config.yaml << 'EOFCONFIG'
-server:
-  listen: "0.0.0.0:8000"
-  maxBodyBytes: 33554432
-  trustedProxies: []
-  readTimeout: 15m
-  requestTimeout: 2h
-  swaggerEnabled: false
-auth:
-  accessTokenTTL: 15m
-  refreshTokenTTL: 720h
-  secureCookies: false
-secrets:
-  jwtSecret: "31dca7815e992c0653998241739d74e4f90b3f69e2cf13a5bf8445205f7625cb"
-  credentialEncryptionKey: "Q+8S+gghePkbLuyCNJ+5/FZiN97Lw6/zpm2SHNs6Zek="
-bootstrapAdmin:
-  username: "admin"
-  password: "Grok2API@2026Secure"
-frontend:
-  staticPath: "./frontend/dist"
-database:
-  driver: sqlite
-  sqlite:
-    path: "./data/backend.db"
-runtimeStore:
-  driver: memory
-media:
-  driver: local
-  local:
-    path: "./data/media"
-EOFCONFIG
+COPY --chmod=0755 docker/render-entrypoint.sh /usr/local/bin/grok2api-render-entrypoint
 
 RUN chown -R grok2api:grok2api /app
 
@@ -99,6 +67,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD wget -qO- http://127.0.0.1:8000/healthz >/dev/null || exit 1
 
-USER grok2api
-
-CMD ["/app/grok2api", "--config", "/app/config.yaml", "--listen", "0.0.0.0:8000"]
+ENTRYPOINT ["/usr/local/bin/grok2api-render-entrypoint"]

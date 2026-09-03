@@ -5,7 +5,15 @@ services:
     dockerfilePath: ./Dockerfile.render
     dockerContext: .
     plan: free
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     envVars:
       - key: TZ
         value: Asia/Shanghai
+      - key: GROK2API_JWT_SECRET
+        generateValue: true
+      - key: GROK2API_CREDENTIAL_ENCRYPTION_KEY
+        sync: false
+      - key: GROK2API_ADMIN_USERNAME
+        value: admin
+      - key: GROK2API_ADMIN_PASSWORD
+        sync: false
